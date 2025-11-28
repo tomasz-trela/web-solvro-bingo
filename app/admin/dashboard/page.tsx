@@ -98,11 +98,11 @@ export default function AdminDashboard() {
                             <div className="relative">
                                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                                     {currentSubmission.image && (
-                                        <div className="relative">
+                                        <div className="relative w-full h-96">
                                             <img
                                                 src={currentSubmission.image}
                                                 alt="Submission"
-                                                className="w-full h-96 object-cover"
+                                                className="w-full h-full object-contain bg-gray-100"
                                             />
                                         </div>
                                     )}
