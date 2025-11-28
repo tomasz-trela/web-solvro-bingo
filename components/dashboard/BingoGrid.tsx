@@ -40,11 +40,14 @@ export function BingoGrid({ tiles }: BingoGridProps) {
                         aspect-square p-2 sm:p-3 rounded-lg text-xs sm:text-sm font-medium
                         transition-all duration-200 active:scale-95 sm:hover:scale-105
                         flex items-center justify-center text-center shadow-lg
+                        overflow-hidden
                         ${getCellStyle(tile.status)}
                     `}
-                    title={`Status: ${tile.status}`}
+                    title={tile.title}
                 >
-                    {tile.title}
+                    <span className="line-clamp-3 sm:line-clamp-4">
+                        {tile.title}
+                    </span>
                 </button>
             ))}
         </div>
