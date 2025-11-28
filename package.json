@@ -11,8 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed dev": "tsx db/seed.ts",
-    "db:seed prod": "tsx db/seedProd.ts",
+    "db:seed:dev": "tsx db/seed.ts",
+    "db:seed:prod": "tsx db/seedProd.ts",
     "create:admin": "tsx command/createAdmin.ts"
   },
   "dependencies": {
