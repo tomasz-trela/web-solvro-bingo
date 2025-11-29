@@ -180,6 +180,17 @@ export async function getBingoSubmissionsByUserId(userId: string) {
 }
 
 export async function getBingoSubmissions() {
+    const latestSubmissions = db
+        .select({
+            bingoItemId: bingoSubmissions.bingoItemId,
+            maxCreatedAt: sql<Date>`max(${bingoSubmissions.createdAt})`.as('max_created_at'),
+        })
+        .from(bingoSubmissions)
+        .innerJoin(bingoItems, eq(bingoSubmissions.bingoItemId, bingoItems.id))
+        .where(eq(bingoItems.status, "pending"))
+        .groupBy(bingoSubmissions.bingoItemId)
+        .as('latest_submissions');
+
     const submissions = await db
         .select({
             id: bingoSubmissions.id,
@@ -204,6 +215,13 @@ export async function getBingoSubmissions() {
         .innerJoin(bingoItems, eq(bingoSubmissions.bingoItemId, bingoItems.id))
         .innerJoin(bingoSetTiles, eq(bingoItems.setTileId, bingoSetTiles.id))
         .innerJoin(users, eq(bingoItems.userId, users.id))
+        .innerJoin(
+            latestSubmissions,
+            and(
+                eq(bingoSubmissions.bingoItemId, latestSubmissions.bingoItemId),
+                eq(bingoSubmissions.createdAt, latestSubmissions.maxCreatedAt)
+            )
+        )
         .where(eq(bingoItems.status, "pending"))
         .orderBy(bingoSubmissions.createdAt);
 
@@ -217,12 +235,18 @@ export async function getLeaderboard() {
             email: users.email,
             name: users.name,
             verifiedCount: sql<number>`cast(count(case when ${bingoItems.status} = 'verified' then 1 end) as int)`,
+            lastVerifiedAt: sql<Date | null>`max(case when ${bingoItems.status} = 'verified' and ${bingoSetTiles.index} != 7 then ${bingoSubmissions.createdAt} end)`,
         })
         .from(users)
         .where(eq(users.role, "user"))
         .leftJoin(bingoItems, eq(bingoItems.userId, users.id))
+        .leftJoin(bingoSubmissions, eq(bingoSubmissions.bingoItemId, bingoItems.id))
+        .leftJoin(bingoSetTiles, eq(bingoItems.setTileId, bingoSetTiles.id))
         .groupBy(users.id, users.email, users.name)
-        .orderBy(desc(sql`count(case when ${bingoItems.status} = 'verified' then 1 end)`))
+        .orderBy(
+            desc(sql`count(case when ${bingoItems.status} = 'verified' then 1 end)`),
+            sql`max(case when ${bingoItems.status} = 'verified' and ${bingoSetTiles.index} != 7 then ${bingoSubmissions.createdAt} end) asc`
+        )
         .limit(10);
 
     return leaderboard;
