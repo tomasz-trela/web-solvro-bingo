@@ -234,7 +234,7 @@ export async function getLeaderboard() {
             userId: users.id,
             email: users.email,
             name: users.name,
-            verifiedCount: sql<number>`cast(count(case when ${bingoItems.status} = 'verified' then 1 end) as int)`,
+            verifiedCount: sql<number>`cast(count(distinct case when ${bingoItems.status} = 'verified' then ${bingoItems.setTileId} end) as int)`,
             lastVerifiedAt: sql<Date | null>`max(case when ${bingoItems.status} = 'verified' and ${bingoSetTiles.index} != 7 then ${bingoSubmissions.createdAt} end)`,
         })
         .from(users)
@@ -244,7 +244,7 @@ export async function getLeaderboard() {
         .leftJoin(bingoSetTiles, eq(bingoItems.setTileId, bingoSetTiles.id))
         .groupBy(users.id, users.email, users.name)
         .orderBy(
-            desc(sql`count(case when ${bingoItems.status} = 'verified' then 1 end)`),
+            desc(sql`count(distinct case when ${bingoItems.status} = 'verified' then ${bingoItems.setTileId} end)`),
             sql`max(case when ${bingoItems.status} = 'verified' and ${bingoSetTiles.index} != 7 then ${bingoSubmissions.createdAt} end) asc`
         )
         .limit(10);
