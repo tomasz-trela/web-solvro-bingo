@@ -8,6 +8,7 @@ import { useBingoTiles, type BingoTile } from "@/hooks/useBingoTiles";
 import { useQueryClient } from "@tanstack/react-query";
 import { ImageUploader } from "@/components/submission/ImageUploader";
 import { AlertMessage } from "@/components/submission/AlertMessage";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 
 function SubmissionForm() {
   const { data: session, status } = useSession();
@@ -87,11 +88,7 @@ function SubmissionForm() {
   }
 
   if (status === "loading" || !tile) {
-    return (
-      <div className="flex h-screen items-center justify-center text-white">
-        Ładowanie...
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!session) {
@@ -163,13 +160,7 @@ function SubmissionForm() {
 
 export default function SubmissionPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center text-white">
-          Ładowanie...
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingScreen />}>
       <SubmissionForm />
     </Suspense>
   );

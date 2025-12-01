@@ -6,6 +6,7 @@ import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { TextButton } from "@/components/shared/TextButton";
 import { LeaderboardHeader } from "@/components/leaderboard/LeaderboardHeader";
 import { LeaderboardList } from "@/components/leaderboard/LeaderboardList";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 
 export default function LeaderboardPage() {
     const { data: session, status } = useSession();
@@ -13,7 +14,7 @@ export default function LeaderboardPage() {
     const { data: leaderboard = [], isLoading } = useLeaderboard();
 
     if (status === "loading" || isLoading) {
-        return <div className="flex h-screen items-center justify-center text-white">Loading...</div>;
+        return <LoadingScreen />;
     }
 
     if (!session) {

@@ -7,6 +7,7 @@ import { BingoGrid } from "@/components/dashboard/BingoGrid";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 import { TopBarActions } from "@/components/shared/TopBarActions";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 
 export default function Dashboard() {
     const { data: session, status } = useSession();
@@ -14,7 +15,7 @@ export default function Dashboard() {
     const { data: tiles = [], isLoading } = useBingoTiles();
 
     if (status === "loading" || isLoading) {
-        return <div className="flex h-screen items-center justify-center text-white">Ładowanie...</div>;
+        return <LoadingScreen />;
     }
 
     if (!session) {
