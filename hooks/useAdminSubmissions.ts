@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-export type AdminSubmission = {
+export interface AdminSubmission {
     id: string;
     bingoItemId: string;
     image: string;
