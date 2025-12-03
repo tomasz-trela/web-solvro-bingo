@@ -4,9 +4,10 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { TextButton } from "@/components/shared/TextButton";
-import { LeaderboardHeader } from "@/components/leaderboard/LeaderboardHeader";
-import { LeaderboardList } from "@/components/leaderboard/LeaderboardList";
+import { LeaderboardHeader } from "@/app/leaderboard/components/LeaderboardHeader";
+import { LeaderboardList } from "@/app/leaderboard/components/LeaderboardList";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { BackgroundContainer } from "@/components/shared/BackgroundContainer";
 
 export default function LeaderboardPage() {
     const { data: session, status } = useSession();
@@ -23,7 +24,7 @@ export default function LeaderboardPage() {
     }
 
     return (
-        <div className="min-h-screen p-4 sm:p-8 relative" style={{ backgroundImage: 'url(/bg.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <BackgroundContainer className="min-h-screen p-4 sm:p-8 relative">
             <div className="absolute top-4 right-4">
                 <TextButton
                     onClick={() => signOut({ callbackUrl: "/login" })}
@@ -46,6 +47,6 @@ export default function LeaderboardPage() {
                     />
                 </div>
             </div>
-        </div>
+        </BackgroundContainer>
     );
 }

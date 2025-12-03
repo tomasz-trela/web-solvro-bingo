@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { BackgroundContainer } from "@/components/shared/BackgroundContainer";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -26,28 +27,36 @@ function LoginForm() {
     if (res?.error) {
       setError("Nieprawidłowy email lub hasło");
     } else {
-      // Pobierz sesję aby sprawdzić rolę
-      const session = await fetch("/api/auth/session").then((r) => r.json());
+      try {
+        const response = await fetch("/api/auth/session", {
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      if (session?.user?.role === "admin") {
-        router.push("/admin/dashboard");
-      } else {
+        if (!response.ok) {
+          throw new Error('Failed to fetch session');
+        }
+
+        const session = await response.json();
+
+        if (session?.user?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/");
+        }
+        router.refresh();
+      } catch (error) {
+        console.error('Session fetch error:', error);
         router.push("/");
+        router.refresh();
       }
-      router.refresh();
     }
   };
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center p-4"
-      style={{
-        backgroundImage: "url(/bg.svg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
+    <BackgroundContainer className="flex min-h-screen items-center justify-center p-4">
       <form
         onSubmit={handleSubmit}
         className="p-8 sm:p-10 bg-white/95 backdrop-blur-sm border rounded-2xl shadow-lg w-full max-w-md"
@@ -109,7 +118,7 @@ function LoginForm() {
           </Link>
         </p>
       </form>
-    </div>
+    </BackgroundContainer>
   );
 }
 

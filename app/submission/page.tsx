@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ImageUploader } from "@/components/submission/ImageUploader";
 import { AlertMessage } from "@/components/submission/AlertMessage";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { BackgroundContainer } from "@/components/shared/BackgroundContainer";
 
 function SubmissionForm() {
   const { data: session, status } = useSession();
@@ -96,15 +97,7 @@ function SubmissionForm() {
   }
 
   return (
-    <div
-      className="min-h-screen p-4 sm:p-8 relative"
-      style={{
-        backgroundImage: "url(/bg.svg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
+    <BackgroundContainer className="min-h-screen p-4 sm:p-8 relative">
       <div className="max-w-md mx-auto">
         <div className="flex justify-end mb-4">
           <button
@@ -154,7 +147,7 @@ function SubmissionForm() {
           </form>
         </div>
       </div>
-    </div>
+    </BackgroundContainer>
   );
 }
 

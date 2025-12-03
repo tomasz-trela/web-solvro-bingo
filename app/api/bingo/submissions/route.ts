@@ -7,6 +7,8 @@ import {
     updateBingoItemStatus,
     getBingoSubmissionsByUserId
 } from "@/db/queries";
+import { validateMessage, validateBase64Image, sanitizeInput } from "@/lib/validation";
+import { unauthorizedResponse, badRequestResponse, notFoundResponse, serverErrorResponse, successResponse } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest) {
     try {
@@ -22,37 +24,40 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { bingoItemId, image, message } = body;
 
-        if (!bingoItemId || !message) {
-            return NextResponse.json(
-                { error: "Missing required fields: bingoItemId and message are required" },
-                { status: 400 }
-            );
+        if (!bingoItemId) {
+            return badRequestResponse("bingoItemId is required");
+        }
+
+        const messageValidation = validateMessage(message);
+        if (!messageValidation.valid) {
+            return badRequestResponse(messageValidation.error || "Invalid message");
+        }
+
+        const imageValidation = validateBase64Image(image);
+        if (!imageValidation.valid) {
+            return badRequestResponse(imageValidation.error || "Invalid image");
         }
 
         const bingoItem = await getBingoItemById(bingoItemId, session.user.id);
 
         if (!bingoItem) {
-            return NextResponse.json(
-                { error: "Bingo item not found or does not belong to you" },
-                { status: 404 }
-            );
+            return notFoundResponse("Bingo item not found or does not belong to you");
         }
 
         const submission = await createBingoSubmission({
             bingoItemId,
-            image,
-            message,
+            image: image || null,
+            message: sanitizeInput(message),
         });
 
         await updateBingoItemStatus(bingoItemId, session.user.id, "pending");
 
-        return NextResponse.json(submission, { status: 201 });
+        return successResponse(submission, 201);
     } catch (error) {
-        console.error("Error creating bingo submission:", error);
-        return NextResponse.json(
-            { error: "Failed to create submission" },
-            { status: 500 }
-        );
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Error creating bingo submission:", error);
+        }
+        return serverErrorResponse("Failed to create submission");
     }
 }
 
@@ -61,20 +66,16 @@ export async function GET() {
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
-            );
+            return unauthorizedResponse();
         }
 
         const submissions = await getBingoSubmissionsByUserId(session.user.id);
 
-        return NextResponse.json(submissions);
+        return successResponse(submissions);
     } catch (error) {
-        console.error("Error fetching bingo submissions:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch submissions" },
-            { status: 500 }
-        );
+        if (process.env.NODE_ENV === 'development') {
+            console.error("Error fetching bingo submissions:", error);
+        }
+        return serverErrorResponse("Failed to fetch submissions");
     }
 }

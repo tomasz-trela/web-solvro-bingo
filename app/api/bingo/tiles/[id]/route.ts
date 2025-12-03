@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { updateBingoItemStatus } from "@/db/queries";
+import { BINGO_STATUSES } from "@/lib/constants";
+import { unauthorizedResponse, badRequestResponse, notFoundResponse, serverErrorResponse, successResponse } from "@/lib/api-utils";
 
 export async function PATCH(
   req: Request,
@@ -11,18 +13,15 @@ export async function PATCH(
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const { status } = await req.json();
 
-    // Walidacja statusu
-    const validStatuses = ["unverified", "pending", "verified", "rejected"];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    if (!BINGO_STATUSES.includes(status as any)) {
+      return badRequestResponse("Invalid status");
     }
 
-    // Aktualizuj tylko jeśli kafelek należy do użytkownika
     const updatedTile = await updateBingoItemStatus(
       (
         await params
@@ -32,15 +31,14 @@ export async function PATCH(
     );
 
     if (!updatedTile) {
-      return NextResponse.json({ error: "Tile not found" }, { status: 404 });
+      return notFoundResponse("Tile not found");
     }
 
-    return NextResponse.json(updatedTile);
+    return successResponse(updatedTile);
   } catch (error) {
-    console.error("Error updating bingo tile:", error);
-    return NextResponse.json(
-      { error: "Failed to update bingo tile" },
-      { status: 500 }
-    );
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error updating bingo tile:", error);
+    }
+    return serverErrorResponse("Failed to update bingo tile");
   }
 }

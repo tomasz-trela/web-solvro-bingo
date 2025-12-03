@@ -4,10 +4,11 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAdminSubmissions, useUpdateTileStatus } from "@/hooks/useAdminSubmissions";
 import { useSubmissionNavigation } from "@/hooks/useSubmissionNavigation";
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { SubmissionCard } from "@/components/admin/SubmissionCard";
-import { ActionButtons } from "@/components/admin/ActionButtons";
+import { AdminHeader } from "@/app/admin/dashboard/components/AdminHeader";
+import { SubmissionCard } from "@/app/admin/dashboard/components/SubmissionCard";
+import { ActionButtons } from "@/app/admin/dashboard/components/ActionButtons";
 import { LoadingScreen } from "@/components/shared/LoadingScreen";
+import { BackgroundContainer } from "@/components/shared/BackgroundContainer";
 
 export default function AdminDashboard() {
     const { data: session, status } = useSession();
@@ -66,7 +67,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="min-h-screen p-4 sm:p-8 relative" style={{ backgroundImage: 'url(/bg.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <BackgroundContainer className="min-h-screen p-4 sm:p-8 relative">
             <div className="max-w-6xl mx-auto">
                 <AdminHeader
                     userEmail={session.user?.email}
@@ -109,6 +110,6 @@ export default function AdminDashboard() {
                     ) : null}
                 </div>
             </div>
-        </div>
+        </BackgroundContainer>
     );
 }

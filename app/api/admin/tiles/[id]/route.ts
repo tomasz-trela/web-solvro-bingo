@@ -8,6 +8,7 @@ import {
     serverErrorResponse,
     successResponse
 } from "@/lib/api-utils";
+import { BINGO_STATUSES } from "@/lib/constants";
 
 export async function PATCH(
     req: Request,
@@ -25,8 +26,7 @@ export async function PATCH(
         const { status, rejectionReason } = body;
 
         if (status) {
-            const validStatuses = ["unverified", "pending", "verified", "rejected"];
-            if (!validStatuses.includes(status)) {
+            if (!BINGO_STATUSES.includes(status as any)) {
                 return badRequestResponse("Invalid status");
             }
         }

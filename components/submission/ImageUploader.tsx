@@ -1,11 +1,13 @@
 import { useRef, useState, useEffect } from "react";
+import { validateBase64Image } from "@/lib/validation";
 
 interface ImageUploaderProps {
     image: string;
     onImageSelect: (image: string) => void;
+    onError?: (error: string) => void;
 }
 
-export function ImageUploader({ image, onImageSelect }: ImageUploaderProps) {
+export function ImageUploader({ image, onImageSelect, onError }: ImageUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,9 +39,38 @@ export function ImageUploader({ image, onImageSelect }: ImageUploaderProps) {
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                if (onError) {
+                    onError('Image size must be less than 5MB');
+                }
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                if (onError) {
+                    onError('Please select an image file');
+                }
+                return;
+            }
+
             const reader = new FileReader();
             reader.onloadend = () => {
-                onImageSelect(reader.result as string);
+                const base64String = reader.result as string;
+
+                const validation = validateBase64Image(base64String);
+                if (!validation.valid) {
+                    if (onError) {
+                        onError(validation.error || 'Invalid image');
+                    }
+                    return;
+                }
+
+                onImageSelect(base64String);
+            };
+            reader.onerror = () => {
+                if (onError) {
+                    onError('Failed to read image file');
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -59,8 +90,13 @@ export function ImageUploader({ image, onImageSelect }: ImageUploaderProps) {
                 }
             }, 100);
         } catch (err) {
-            console.error('Error accessing camera:', err);
-            alert('Nie można uzyskać dostępu do kamery');
+            const errorMessage = 'Unable to access camera. Please check permissions.';
+            if (onError) {
+                onError(errorMessage);
+            }
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Error accessing camera:', err);
+            }
         }
     }
 
@@ -75,7 +111,17 @@ export function ImageUploader({ image, onImageSelect }: ImageUploaderProps) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
                 ctx.drawImage(video, 0, 0);
-                const imageData = canvas.toDataURL('image/jpeg');
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+                const validation = validateBase64Image(imageData);
+                if (!validation.valid) {
+                    if (onError) {
+                        onError(validation.error || 'Captured image is too large');
+                    }
+                    closeCamera();
+                    return;
+                }
+
                 onImageSelect(imageData);
                 closeCamera();
             }

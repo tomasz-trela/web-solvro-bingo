@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { users, bingoItems, bingoSubmissions, bingoSetTiles } from "@/db/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
+import type { BingoStatus } from "@/lib/constants";
 
 export async function getUserByEmail(email: string) {
     const [user] = await db
@@ -102,7 +103,7 @@ export async function getBingoItemById(itemId: string, userId: string) {
 export async function updateBingoItemStatus(
     itemId: string,
     userId: string,
-    status: "unverified" | "pending" | "verified" | "rejected"
+    status: BingoStatus
 ) {
     const [updatedTile] = await db
         .update(bingoItems)
@@ -121,11 +122,11 @@ export async function updateBingoItemStatus(
 export async function adminUpdateBingoItem(
     itemId: string,
     data: {
-        status?: "unverified" | "pending" | "verified" | "rejected";
+        status?: BingoStatus;
         rejectionReason?: string | null;
     }
 ) {
-    const updateData: Record<string, any> = {};
+    const updateData: Partial<typeof bingoItems.$inferInsert> = {};
     if (data.status !== undefined) updateData.status = data.status;
     if (data.rejectionReason !== undefined) updateData.rejectionReason = data.rejectionReason;
 

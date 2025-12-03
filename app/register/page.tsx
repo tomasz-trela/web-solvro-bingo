@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { BackgroundContainer } from "@/components/shared/BackgroundContainer";
+import { validatePassword } from "@/lib/validation";
+import { MIN_PASSWORD_LENGTH } from "@/lib/constants";
 
 export default function RegisterPage() {
     const [name, setName] = useState("");
@@ -22,8 +25,9 @@ export default function RegisterPage() {
             return;
         }
 
-        if (password.length < 6) {
-            setError("Hasło musi mieć minimum 6 znaków");
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.valid) {
+            setError(passwordValidation.error || "Nieprawidłowe hasło");
             return;
         }
 
@@ -49,7 +53,6 @@ export default function RegisterPage() {
                 return;
             }
 
-            // Przekieruj do logowania
             router.push("/login?registered=true");
         } catch (err) {
             setError("Wystąpił błąd podczas rejestracji");
@@ -59,7 +62,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4" style={{ backgroundImage: 'url(/bg.svg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <BackgroundContainer className="flex min-h-screen items-center justify-center p-4">
             <form onSubmit={handleSubmit} className="p-8 sm:p-10 bg-white/95 backdrop-blur-sm border rounded-2xl shadow-lg w-full max-w-md">
                 <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-[#2e4272]">Rejestracja</h1>
 
@@ -131,6 +134,6 @@ export default function RegisterPage() {
                     </Link>
                 </p>
             </form>
-        </div>
+        </BackgroundContainer>
     );
 }

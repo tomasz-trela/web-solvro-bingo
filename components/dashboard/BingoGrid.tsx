@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { type BingoTile } from "@/hooks/useBingoTiles";
 
 interface BingoGridProps {
@@ -10,19 +11,22 @@ interface BingoGridProps {
 function getCellStyle(status: BingoTile["status"]) {
     switch (status) {
         case "pending":
-            return 'bg-[#fff4d4] text-[#4c3b1b]'; // Żółty
+            return 'bg-[#fff4d4] text-[#4c3b1b]';
         case "verified":
-            return 'bg-[#d4f4dd] text-[#1b4c2e]'; // Zielony
+            return 'bg-[#d4f4dd] text-[#1b4c2e]';
         case "rejected":
-            return 'bg-[#ffd4d4] text-[#4c1b1b]'; // Czerwony
+            return 'bg-[#ffd4d4] text-[#4c1b1b]';
         default:
-            return 'bg-[#d9e8ff] text-[#1b294c]'; // Niebieski
+            return 'bg-[#d9e8ff] text-[#1b294c]';
     }
 };
 
 export function BingoGrid({ tiles }: BingoGridProps) {
     const router = useRouter();
-    const sortedTiles = [...tiles].sort((a, b) => a.index - b.index);
+    const sortedTiles = useMemo(() =>
+        [...tiles].sort((a, b) => a.index - b.index),
+        [tiles]
+    );
 
     function handleTileClick(tile: BingoTile): void {
         if (tile.status === "unverified" || tile.status === "rejected") {

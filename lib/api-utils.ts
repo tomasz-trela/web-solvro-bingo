@@ -37,6 +37,13 @@ export function serverErrorResponse(message = "Internal server error") {
     );
 }
 
+export function conflictResponse(message = "Conflict") {
+    return NextResponse.json(
+        { error: message },
+        { status: 409 }
+    );
+}
+
 export function successResponse<T>(data: T, status = 200) {
     return NextResponse.json(data, { status });
 }
